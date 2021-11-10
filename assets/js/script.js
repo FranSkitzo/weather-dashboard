@@ -54,3 +54,24 @@ const displayWeather = userInput =>{
   getCityWeather(userInput)
 }
 
+const getCityWeather = userInput =>{
+  display.innerHTML = ''
+  fetch(`https://api.openweathermap.org/data/2.5/weather?q=${userInput}&appid=bc897462f77e8da95ca4a6bc870c9d0b`)
+    .then(response => response.json())
+    .then(({ main: { temp, humidity }, wind: { speed }, coord: { lon, lat } }) => {
+      let info = document.createElement('div')
+      temp = toFarenheit(temp)
+
+      // console.log(temp, humidity, speed, lon, lat)
+      info.innerHTML = `<h2>${userInput} ${moment().format('MM/DD/YYYY')}</h2>
+    <p>Temperature: ${temp} ºF</p>
+    <p>Humidity: ${humidity}</p>
+    <p> Wind Speed: ${speed} mph </p>
+    `
+      display.append(info)
+      getUvIndex(lon, lat)
+      getFiveDayForecast(lon, lat)
+      
+    })
+    .catch(error => console.error(error))
+}
