@@ -26,7 +26,7 @@ const renderPastCity = _ =>{
   //set to empty before every render
   citySelect.innerHTML = ''
   for(let i = 0; i<pastCities.length; i++){
-    let cityNode = document.createElement('div')
+    let cityNode = document.createElement('a')
     cityNode.innerHTML = `${pastCities[i]} <hr>`
     citySelect.append(cityNode)
   }
@@ -75,3 +75,58 @@ const getCityWeather = userInput =>{
     })
     .catch(error => console.error(error))
 }
+const getUvIndex = (lon, lat) =>{
+  fetch(`https://api.openweathermap.org/data/2.5/uvi?appid=bc897462f77e8da95ca4a6bc870c9d0b&lat=${lat}&lon=${lon}`)
+    .then(response => response.json())
+    .then(({ value }) => {
+      let uvNode = document.createElement('p')
+      uvNode.textContent = 'UV Index: '
+      let uvSpan = document.createElement('span')
+      uvSpan.textContent = `${value}`
+      value = Math.floor(value)
+      if(value < 3){
+        uvSpan.setAttribute('class', 'uvSafe')
+      }
+      else if (value > 2 && value <6){
+        uvSpan.setAttribute('class', 'uvMed')
+      }
+      else if (value > 5 && value < 8){
+        uvSpan.setAttribute('class', 'uvMod')
+      }
+      else{
+        uvSpan.setAttribute('class', 'uvHigh')
+      }
+      uvNode.append(uvSpan)
+      display.append(uvNode)
+    })
+
+    .catch(error => console.error(error))
+}
+
+const getFiveDayForecast = (lon, lat) =>{
+  fiveSelect.innerHTML =''
+  fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=bc897462f77e8da95ca4a6bc870c9d0b`)
+    .then(response => response.json())
+    .then(data => {
+      console.log(data)
+      //converting unix time stamp to a date time
+      let list = data.list
+      console.log(moment.unix(list[0].dt).format("MM/DD/YYYY"))
+      for(let i = 7; i<list.length; i+=7){
+        let fiveNode = document.createElement('div')
+        fiveNode.setAttribute('class', 'col-sm-2.4 fiveDayStyle')
+        fiveNode.innerHTML =`
+            <h6>${moment.unix(list[i].dt).format("MM/DD/YYYY")}</h6>
+            <img src ="https://openweathermap.org/img/wn/${list[i].weather[0].icon}.png" alt = "${list[i].weather[0].icon}">
+            <p>Temp: ${toFarenheit(list[i].main.temp)} ºF</p>
+            <p>Humidity: ${list[i].main.humidity}%</p>
+        `
+        console.log(fiveNode)
+        fiveSelect.append(fiveNode)
+      }
+      // starts at index 0 and increases by 7
+    })
+    .catch(error => console.error(error))
+}
+
+renderPastCity()
